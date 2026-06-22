@@ -1,7 +1,12 @@
+import LogoutButton from "@/components/auth/LogoutButton";
+
 const PortalPage = () => {
   return (
-    <div>PortalPage</div>
-  )
-}
+    <div>
+      <p>PortalPage</p>
+      <LogoutButton />
+    </div>
+  );
+};
 
-export default PortalPage
+export default PortalPage;
