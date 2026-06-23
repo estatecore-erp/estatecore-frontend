@@ -1,64 +1,59 @@
-'use client'
+"use client";
 
-import { SyntheticEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from '@/components/ui/field'
+import { SyntheticEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 
 export default function LoginForm() {
-  const router = useRouter()
-  const { setUser } = useAuthStore()
+  const router = useRouter();
+  const { setUser } = useAuthStore();
 
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [loading, setLoading] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setErrors({})
+    e.preventDefault();
+    setLoading(true);
+    setErrors({});
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(e.currentTarget);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.get('email'),
-          password: formData.get('password'),
+          email: formData.get("email"),
+          password: formData.get("password"),
         }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!data.success) {
-        setErrors({ general: data.message || 'Invalid credentials' })
-        return
+        setErrors({ general: data.message || "Invalid credentials" });
+        return;
       }
 
-      setUser(data.user)
+      setUser(data.user);
 
-      if (data.user.role === 'client') {
-        router.push('/portal')
+      if (data.user.role === "client") {
+        router.push("/portal");
       } else {
-        router.push('/dashboard')
+        router.push("/dashboard");
       }
     } catch {
-      setErrors({ general: 'Something went wrong' })
+      setErrors({ general: "Something went wrong" });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-
       <Field data-invalid={!!errors.email}>
         <FieldLabel htmlFor="email">Email</FieldLabel>
         <Input
@@ -89,21 +84,16 @@ export default function LoginForm() {
         <p className="text-sm text-destructive">{errors.general}</p>
       )}
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={loading}
-      >
-        {loading ? 'Logging in...' : 'Login'}
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
       </Button>
 
       <p className="text-sm text-center text-muted-foreground">
-        Don&apos;t have an account?{' '}
+        Don&apos;t have an account?{" "}
         <a href="/register" className="text-primary hover:underline">
           Register
         </a>
       </p>
-
     </form>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import { SidebarProvider } from '@/components/ui/sidebar'
-import AppSidebar from '@/components/layout/AppSidebar'
-import DashboardNavbar from '@/components/layout/DashboardNavbar'
+import { SidebarProvider } from "@/components/ui/sidebar";
+import AppSidebar from "@/components/layout/AppSidebar";
+import DashboardNavbar from "@/components/layout/DashboardNavbar";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <SidebarProvider>
@@ -17,5 +17,5 @@ export default function DashboardLayout({
         </main>
       </div>
     </SidebarProvider>
-  )
+  );
 }
