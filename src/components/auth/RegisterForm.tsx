@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Card, CardContent } from "../ui/card";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -52,88 +53,97 @@ export default function RegisterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Field data-invalid={!!errors.name}>
-        <FieldLabel htmlFor="name">Full Name</FieldLabel>
-        <Input
-          id="name"
-          name="name"
-          type="text"
-          placeholder="John Doe"
-          required
-        />
-        <FieldError>{errors.name}</FieldError>
-      </Field>
+    <Card>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field data-invalid={!!errors.name}>
+            <FieldLabel htmlFor="name">Full Name</FieldLabel>
+            <Input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Enter full name"
+              required
+            />
+            <FieldError>{errors.name}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.email}>
-        <FieldLabel htmlFor="email">Email</FieldLabel>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="john@gmail.com"
-          required
-        />
-        <FieldError>{errors.email}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.email}>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter email"
+              required
+            />
+            <FieldError>{errors.email}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.phone}>
-        <FieldLabel htmlFor="phone">Phone</FieldLabel>
-        <Input id="phone" name="phone" type="tel" placeholder="0771234567" />
-        <FieldError>{errors.phone}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.phone}>
+            <FieldLabel htmlFor="phone">Phone</FieldLabel>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              placeholder="Enter phone number"
+            />
+            <FieldError>{errors.phone}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.address}>
-        <FieldLabel htmlFor="address">Address</FieldLabel>
-        <Input
-          id="address"
-          name="address"
-          type="text"
-          placeholder="123 Main St"
-        />
-        <FieldError>{errors.address}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.address}>
+            <FieldLabel htmlFor="address">Address</FieldLabel>
+            <Input
+              id="address"
+              name="address"
+              type="text"
+              placeholder="Enter address"
+            />
+            <FieldError>{errors.address}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.password}>
-        <FieldLabel htmlFor="password">Password</FieldLabel>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="••••••••"
-          required
-        />
-        <FieldError>{errors.password}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.password}>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter password"
+              required
+            />
+            <FieldError>{errors.password}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.password_confirmation}>
-        <FieldLabel htmlFor="password_confirmation">
-          Confirm Password
-        </FieldLabel>
-        <Input
-          id="password_confirmation"
-          name="password_confirmation"
-          type="password"
-          placeholder="••••••••"
-          required
-        />
-        <FieldError>{errors.password_confirmation}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.password_confirmation}>
+            <FieldLabel htmlFor="password_confirmation">
+              Confirm Password
+            </FieldLabel>
+            <Input
+              id="password_confirmation"
+              name="password_confirmation"
+              type="password"
+              placeholder="Confirm password"
+              required
+            />
+            <FieldError>{errors.password_confirmation}</FieldError>
+          </Field>
 
-      {errors.general && (
-        <p className="text-sm text-destructive">{errors.general}</p>
-      )}
+          {errors.general && (
+            <p className="text-sm text-destructive">{errors.general}</p>
+          )}
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Creating account..." : "Register"}
-      </Button>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Creating account..." : "Register"}
+          </Button>
 
-      <p className="text-sm text-center text-muted-foreground">
-        Already have an account?{" "}
-        <a href="/login" className="text-primary hover:underline">
-          Login
-        </a>
-      </p>
-    </form>
+          <p className="text-sm text-center text-muted-foreground">
+            Already have an account?{" "}
+            <a href="/login" className="text-primary hover:underline">
+              Login
+            </a>
+          </p>
+        </form>
+      </CardContent>
+    </Card>
   );
 }

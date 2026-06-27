@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Card, CardContent } from "../ui/card";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -53,47 +54,51 @@ export default function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <Field data-invalid={!!errors.email}>
-        <FieldLabel htmlFor="email">Email</FieldLabel>
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="john@gmail.com"
-          aria-invalid={!!errors.email}
-          required
-        />
-        <FieldError>{errors.email}</FieldError>
-      </Field>
+    <Card>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Field data-invalid={!!errors.email}>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter email"
+              aria-invalid={!!errors.email}
+              required
+            />
+            <FieldError>{errors.email}</FieldError>
+          </Field>
 
-      <Field data-invalid={!!errors.password}>
-        <FieldLabel htmlFor="password">Password</FieldLabel>
-        <Input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="••••••••"
-          aria-invalid={!!errors.password}
-          required
-        />
-        <FieldError>{errors.password}</FieldError>
-      </Field>
+          <Field data-invalid={!!errors.password}>
+            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter password"
+              aria-invalid={!!errors.password}
+              required
+            />
+            <FieldError>{errors.password}</FieldError>
+          </Field>
 
-      {errors.general && (
-        <p className="text-sm text-destructive">{errors.general}</p>
-      )}
+          {errors.general && (
+            <p className="text-sm text-destructive">{errors.general}</p>
+          )}
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Logging in..." : "Login"}
-      </Button>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </Button>
 
-      <p className="text-sm text-center text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <a href="/register" className="text-primary hover:underline">
-          Register
-        </a>
-      </p>
-    </form>
+          <p className="text-sm text-center text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <a href="/register" className="text-primary hover:underline">
+              Register
+            </a>
+          </p>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
