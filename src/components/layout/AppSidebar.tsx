@@ -13,7 +13,15 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  UserCheck,
+  MessageSquare,
+  FileText,
+  DollarSign,
+} from "lucide-react";
 import LogoutButton from "@/components/auth/LogoutButton";
 
 import LogoMain from "@/../public/logo.svg";
@@ -22,6 +30,12 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/properties", label: "Properties", icon: Building2 },
+  { href: "/dashboard/clients", label: "Clients", icon: Users },
+  { href: "/dashboard/employees", label: "Employees", icon: UserCheck },
+  { href: "/dashboard/inquiries", label: "Inquiries", icon: MessageSquare },
+  { href: "/dashboard/leases", label: "Leases", icon: FileText },
+  { href: "/dashboard/sales", label: "Sales", icon: DollarSign },
 ];
 
 const AppSidebar = () => {
