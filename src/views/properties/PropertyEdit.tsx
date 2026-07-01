@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
 const mockProperty = {
   id: 1,
@@ -51,80 +52,81 @@ const PropertyEditSection = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-xl">
-      <h1 className="text-2xl font-semibold">Edit property</h1>
-
+    <Card className="max-w-3xl">
       <form onSubmit={handleUpdate} className="space-y-4">
-        <Field>
-          <FieldLabel htmlFor="title">Title</FieldLabel>
-          <Input
-            id="title"
-            name="title"
-            defaultValue={mockProperty.title}
-            required
-          />
-        </Field>
+        <CardContent className="space-y-6">
+          <h1 className="text-2xl font-semibold">Edit property</h1>
 
-        <Field>
-          <FieldLabel htmlFor="description">Description</FieldLabel>
-          <Input
-            id="description"
-            name="description"
-            defaultValue={mockProperty.description}
-          />
-        </Field>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field>
-            <FieldLabel htmlFor="type">Type</FieldLabel>
-            <Select name="type" defaultValue={mockProperty.type}>
-              <SelectTrigger id="type" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sale">Sale</SelectItem>
-                <SelectItem value="rent">Rent</SelectItem>
-              </SelectContent>
-            </Select>
+            <FieldLabel htmlFor="title">Title</FieldLabel>
+            <Input
+              id="title"
+              name="title"
+              defaultValue={mockProperty.title}
+              required
+            />
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="status">Status</FieldLabel>
-            <Select name="status" defaultValue={mockProperty.status}>
-              <SelectTrigger id="status" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="available">Available</SelectItem>
-                <SelectItem value="rented">Rented</SelectItem>
-                <SelectItem value="sold">Sold</SelectItem>
-              </SelectContent>
-            </Select>
+            <FieldLabel htmlFor="description">Description</FieldLabel>
+            <Input
+              id="description"
+              name="description"
+              defaultValue={mockProperty.description}
+            />
           </Field>
-        </div>
 
-        <Field>
-          <FieldLabel htmlFor="price">Price (LKR)</FieldLabel>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            defaultValue={mockProperty.price}
-            required
-          />
-        </Field>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field>
+              <FieldLabel htmlFor="type">Type</FieldLabel>
+              <Select name="type" defaultValue={mockProperty.type}>
+                <SelectTrigger id="type" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sale">Sale</SelectItem>
+                  <SelectItem value="rent">Rent</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
 
-        <Field>
-          <FieldLabel htmlFor="location">Location</FieldLabel>
-          <Input
-            id="location"
-            name="location"
-            defaultValue={mockProperty.location}
-            required
-          />
-        </Field>
+            <Field>
+              <FieldLabel htmlFor="status">Status</FieldLabel>
+              <Select name="status" defaultValue={mockProperty.status}>
+                <SelectTrigger id="status" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Available</SelectItem>
+                  <SelectItem value="rented">Rented</SelectItem>
+                  <SelectItem value="sold">Sold</SelectItem>
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          <Field>
+            <FieldLabel htmlFor="price">Price (LKR)</FieldLabel>
+            <Input
+              id="price"
+              name="price"
+              type="number"
+              defaultValue={mockProperty.price}
+              required
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="location">Location</FieldLabel>
+            <Input
+              id="location"
+              name="location"
+              defaultValue={mockProperty.location}
+              required
+            />
+          </Field>
+        </CardContent>
+        <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Saving..." : "Save changes"}
           </Button>
@@ -133,9 +135,9 @@ const PropertyEditSection = () => {
               Cancel
             </Link>
           </Button>
-        </div>
+        </CardFooter>
       </form>
-    </div>
+    </Card>
   );
 };
 
