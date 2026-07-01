@@ -1,5 +1,7 @@
+import PropertyCreateSection from "@/views/properties/PropertyCreate";
+
 const PropertyCreatePage = () => {
-  return <div>PropertyCreatePage</div>;
+  return <PropertyCreateSection />;
 };
 
 export default PropertyCreatePage;
