@@ -1,5 +1,7 @@
+import PropertyDetailSection from "@/views/properties/PropertyDetail";
+
 const PropertyPage = () => {
-  return <div>PropertyPage</div>;
+  return <PropertyDetailSection />;
 };
 
 export default PropertyPage;

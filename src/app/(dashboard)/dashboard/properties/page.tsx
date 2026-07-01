@@ -1,5 +1,7 @@
-const PropertiesListPage = () => {
-  return <div>PropertiesListPage</div>;
+import PropertiesListSection from "@/views/properties/PropertiesList";
+
+const PropertiesPage = () => {
+  return <PropertiesListSection />;
 };
 
-export default PropertiesListPage;
+export default PropertiesPage;
