@@ -29,7 +29,11 @@ estatecore-frontend/
 │   │   │       │   ├── create/page.tsx     → imports PropertyCreateSection
 │   │   │       │   ├── [id]/page.tsx       → imports PropertyDetailSection
 │   │   │       │   └── [id]/edit/page.tsx  → imports PropertyEditSection
-│   │   │       ├── users/               # merged Clients + Employees
+│   │   │       ├── users/               # merged Clients + Employees (tabs)
+│   │   │       │   ├── page.tsx            → imports UsersListSection
+│   │   │       │   ├── create/page.tsx     → imports UserCreateSection
+│   │   │       │   ├── [id]/page.tsx       → imports UserDetailSection
+│   │   │       │   └── [id]/edit/page.tsx  → imports UserEditSection
 │   │   │       ├── inquiries/           # (to build — same pattern)
 │   │   │       ├── leases/              # (to build — same pattern)
 │   │   │       └── sales/               # (to build — same pattern)
@@ -168,9 +172,9 @@ API connection happens after all module UIs are complete (project lead's task).
 |------------|----------------------|
 | Properties | ✅ Built (mock data)  |
 | Users (Clients + Employees) | 🔲 To build (see §8 for pattern) |
-| Inquiries  | 🔲 To build           |
-| Leases     | 🔲 To build           |
-| Sales      | 🔲 To build           |
+| Inquiries  | 🔲 To build (see §9)  |
+| Leases     | 🔲 To build (see §10) |
+| Sales      | 🔲 To build (see §11) |
 | Dashboard overview | 🔲 Pending         |
 | Portal pages        | 🔲 Pending         |
 | API integration      | 🔲 Pending (after all UIs done) |
@@ -209,12 +213,63 @@ task — not required for this assignment.
 
 ---
 
-## 9. Conventions Checklist (for every new module PR)
+## 9. Inquiries Module
+
+Follows exact Properties pattern (list/create/detail/edit, `{Module}{Action}.tsx`
+files, `Section` component exports, `statusVariant` badges, `PAGE_SIZE`
+pagination). Diffs from Properties below.
+
+- Route: `/dashboard/inquiries`
+- List: client column + property column + message + status badge
+  (`pending` / `responded`)
+- **No delete/edit form for client role** — client can only create
+  (`POST /inquiries`), agent/admin respond via edit (`PUT /inquiries/{id}`,
+  status only — no full edit form, just a status action)
+- Create form: client only, just `property_id` (select from available
+  properties) + `message` textarea — `client_id` never sent, backend derives it
+- Inquiries do **not** change property status — no side effects to show in UI
+
+---
+
+## 10. Leases Module
+
+Same Properties pattern. Diffs below.
+
+- Route: `/dashboard/leases`
+- List: property + client + start/end date + monthly rent + status
+  (`active` / `expired`)
+- Create form: admin/agent only — property select (filter to `type: rent`,
+  `status: available` only), client select, start date, end date, monthly rent
+- Edit: admin only, status field only (`active` → `expired`) — not a full
+  field edit form
+- Show a small inline note on create/edit that changing status affects the
+  linked property's status (active→rented, expired→available) — mirrors
+  backend's Lease Status Flow
+
+---
+
+## 11. Sales Module
+
+Same Properties pattern. Diffs below.
+
+- Route: `/dashboard/sales`
+- List: property + client + sale price + sale date
+- Create form: admin/agent only — property select (filter to `type: sale`,
+  `status: available` only), client select, sale price, sale date
+- **No edit route** — sales are immutable once created, only delete
+  (admin only). Skip building `/dashboard/sales/[id]/edit`.
+- Delete reverts property status to `available` — fine to just note this in
+  a confirm-delete dialog copy, no extra UI needed
+
+---
+
+## 12. Conventions Checklist (for every new module PR)
 
 - [ ] Files in `src/views/{module}/`, file name `{Module}{Action}.tsx` (no suffix)
 - [ ] Exported component name uses `Section` suffix (e.g. `PropertyCreateSection`)
 - [ ] `src/app/(dashboard)/dashboard/{module}/...` — route files thin wrappers only
-- [ ] 4 routes: list, create, `[id]`, `[id]/edit`
+- [ ] 4 routes: list, create, `[id]`, `[id]/edit` (skip edit route only where
+      backend has no update endpoint — e.g. Sales)
 - [ ] Uses `formatters.ts` (`formatCurrency`, `formatDate`) and
       `constants.ts` (`statusVariant`, `PAGE_SIZE`), no local duplicates
 - [ ] Forms use shadcn `Field`, submit handler typed as
