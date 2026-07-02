@@ -17,7 +17,6 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  UserCheck,
   MessageSquare,
   FileText,
   DollarSign,
@@ -31,8 +30,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/properties", label: "Properties", icon: Building2 },
-  { href: "/dashboard/clients", label: "Clients", icon: Users },
-  { href: "/dashboard/employees", label: "Employees", icon: UserCheck },
+  { href: "/dashboard/users", label: "Users", icon: Users },
   { href: "/dashboard/inquiries", label: "Inquiries", icon: MessageSquare },
   { href: "/dashboard/leases", label: "Leases", icon: FileText },
   { href: "/dashboard/sales", label: "Sales", icon: DollarSign },
