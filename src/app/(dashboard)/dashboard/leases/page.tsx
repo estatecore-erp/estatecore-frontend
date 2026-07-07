@@ -1,5 +1,7 @@
-const LeasesListPage = () => {
-  return <div>LeasesListPage</div>;
+import LeasesListSection from "@/views/leases/LeasesList";
+
+const LeasesPage = () => {
+  return <LeasesListSection />;
 };
 
-export default LeasesListPage;
+export default LeasesPage;
