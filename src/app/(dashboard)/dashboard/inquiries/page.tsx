@@ -1,5 +1,7 @@
+import InquiriesListSection from "@/views/inquiries/inquiriesList";
+
 const InquiriesListPage = () => {
-  return <div>InquiriesListPage</div>;
+  return <InquiriesListSection />;
 };
 
 export default InquiriesListPage;
