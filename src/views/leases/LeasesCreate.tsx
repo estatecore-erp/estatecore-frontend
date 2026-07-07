@@ -70,7 +70,6 @@ const LeaseCreateSection = () => {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <FieldDescription>Rent + available only</FieldDescription>
               <FieldError>{errors.property}</FieldError>
             </Field>
 
@@ -90,12 +89,15 @@ const LeaseCreateSection = () => {
               </Field>
 
               <Field data-invalid={!!errors.monthlyRent}>
-                <FieldLabel htmlFor="monthlyRent">Monthly rent (LKR)</FieldLabel>
+                <FieldLabel htmlFor="monthlyRent">
+                  Monthly rent (LKR)
+                </FieldLabel>
                 <Input
                   id="monthlyRent"
                   name="monthlyRent"
                   type="number"
                   placeholder="25000"
+                  readOnly
                   required
                 />
                 <FieldError>{errors.monthlyRent}</FieldError>
@@ -105,12 +107,7 @@ const LeaseCreateSection = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={!!errors.startDate}>
                 <FieldLabel htmlFor="startDate">Start date</FieldLabel>
-                <Input
-                  id="startDate"
-                  name="startDate"
-                  type="date"
-                  required
-                />
+                <Input id="startDate" name="startDate" type="date" required />
                 <FieldError>{errors.startDate}</FieldError>
               </Field>
 
