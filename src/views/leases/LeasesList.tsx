@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Pencil, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,7 +20,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Pagination,
   PaginationContent,
@@ -217,7 +221,9 @@ const LeasesListSection = () => {
         onOpenChange={(open) => !open && setEditing(null)}
       >
         <DialogTitle className="sr-only">Lease Edit dialog</DialogTitle>
-        <DialogTitle className="sr-only">Only display in Sr</DialogTitle>
+        <DialogDescription className="sr-only">
+          Only display in Sr
+        </DialogDescription>
 
         <DialogContent className="sm:max-w-md">
           {editing && (
@@ -265,7 +271,9 @@ const LeasesListSection = () => {
         onOpenChange={(open) => !open && setDeleting(null)}
       >
         <DialogTitle className="sr-only">Lease delete dialog</DialogTitle>
-        <DialogTitle className="sr-only">Only display in Sr</DialogTitle>
+        <DialogDescription className="sr-only">
+          Only display in Sr
+        </DialogDescription>
 
         <DialogContent className="sm:max-w-md">
           {deleting && (
