@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -21,12 +22,36 @@ import {
 } from "@/components/ui/field";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuthStore } from "@/store/auth";
+import { ApiResponse, PropertyAgent } from "@/types";
 
 const PropertyCreateSection = () => {
   const router = useRouter();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [agentsLoading, setAgentsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [agents, setAgents] = useState<PropertyAgent[]>([]);
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      const fetchAgents = async () => {
+        setAgentsLoading(true);
+        try {
+          const res = await fetch("/api/users?role=agent");
+          const json: ApiResponse<PropertyAgent[]> = await res.json();
+          if (json.success) setAgents(json.data);
+        } catch (error) {
+          console.error("Failed to fetch agents", error);
+          toast.error("Failed to load agents");
+        } finally {
+          setAgentsLoading(false);
+        }
+      };
+      fetchAgents();
+    }
+  }, [user]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,6 +61,8 @@ const PropertyCreateSection = () => {
   const clearImage = (e: React.MouseEvent) => {
     e.preventDefault();
     setImagePreview(null);
+    const fileInput = document.getElementById("image") as HTMLInputElement;
+    if (fileInput) fileInput.value = "";
   };
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
@@ -45,20 +72,37 @@ const PropertyCreateSection = () => {
 
     const formData = new FormData(e.currentTarget);
 
-    // TODO: connect to API later — POST as multipart/form-data
-    console.log({
-      title: formData.get("title"),
-      description: formData.get("description"),
-      type: formData.get("type"),
-      price: formData.get("price"),
-      location: formData.get("location"),
-      image: formData.get("image"),
-    });
+    try {
+      const res = await fetch("/api/properties", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
 
-    setTimeout(() => {
-      setLoading(false);
+      if (!res.ok) {
+        if (json.errors) {
+          const fieldErrors: Record<string, string> = {};
+          Object.entries(json.errors).forEach(([key, value]) => {
+            fieldErrors[key] = Array.isArray(value) ? value[0] : String(value);
+          });
+          setErrors(fieldErrors);
+          toast.error("Please fix the errors in the form");
+        } else {
+          const message = json.message || "Failed to create property";
+          setErrors({ general: message });
+          toast.error(message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Property created successfully");
       router.push("/dashboard/properties");
-    }, 1000);
+    } catch {
+      setErrors({ general: "Something went wrong. Please try again." });
+      toast.error("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -131,6 +175,42 @@ const PropertyCreateSection = () => {
                   <FieldError>{errors.location}</FieldError>
                 </Field>
 
+                {user?.role === "admin" && (
+                  <Field data-invalid={!!errors.agent_id}>
+                    <FieldLabel htmlFor="agent_id">Assign Agent</FieldLabel>
+                    <Select name="agent_id">
+                      <SelectTrigger id="agent_id" className="w-full">
+                        <SelectValue placeholder="Select an agent" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agentsLoading ? (
+                          <SelectItem
+                            value="loading"
+                            disabled
+                            className="text-muted-foreground"
+                          >
+                            Loading agents...
+                          </SelectItem>
+                        ) : agents.length > 0 ? (
+                          agents.map((agent) => (
+                            <SelectItem
+                              key={agent.id}
+                              value={agent.id.toString()}
+                            >
+                              {agent.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>
+                            No agents available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FieldError>{errors.agent_id}</FieldError>
+                  </Field>
+                )}
+
                 {errors.general && (
                   <p className="text-sm text-destructive">{errors.general}</p>
                 )}
@@ -144,6 +224,7 @@ const PropertyCreateSection = () => {
 
                 {imagePreview ? (
                   <div className="relative w-full h-64 md:h-full min-h-64 rounded-md border overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imagePreview}
                       alt="Preview"

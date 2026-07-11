@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ImagePlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -13,26 +14,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from "@/components/ui/field";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-
-const mockProperty = {
-  id: 1,
-  title: "Modern Villa",
-  description: "3 bedroom villa with garden",
-  type: "sale",
-  status: "available",
-  price: "250000.00",
-  location: "Colombo 07",
-  imageUrl: "/mock/modern-villa.jpg", // existing image from backend
-};
+import { Textarea } from "@/components/ui/textarea";
+import { useAuthStore } from "@/store/auth";
+import { ApiResponse, Property, PropertyAgent } from "@/types";
 
 const PropertyEditSection = () => {
   const router = useRouter();
+  const params = useParams();
+  const { user } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    mockProperty.imageUrl,
-  );
+  const [agentsLoading, setAgentsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [agents, setAgents] = useState<PropertyAgent[]>([]);
+  const [property, setProperty] = useState<Property | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const propRes = await fetch(`/api/properties/${params.id}`);
+        const propJson: ApiResponse<Property> = await propRes.json();
+
+        if (propJson.success) {
+          setProperty(propJson.data);
+          if (propJson.data.image_path) {
+            setImagePreview(
+              `${process.env.NEXT_PUBLIC_ASSET_URL}${propJson.data.image_path}`,
+            );
+          }
+        } else {
+          toast.error("Failed to load property");
+        }
+
+        if (user?.role === "admin") {
+          setAgentsLoading(true);
+          const agentRes = await fetch("/api/users?role=agent");
+          const agentJson: ApiResponse<PropertyAgent[]> = await agentRes.json();
+          if (agentJson.success) setAgents(agentJson.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch data", error);
+        toast.error("Failed to load property");
+      } finally {
+        setAgentsLoading(false);
+      }
+    };
+    fetchData();
+  }, [params.id, user]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -47,25 +82,45 @@ const PropertyEditSection = () => {
   const handleUpdate = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
 
     const formData = new FormData(e.currentTarget);
 
-    // TODO: connect to API later — only send "image" if a new file was picked
-    console.log({
-      title: formData.get("title"),
-      description: formData.get("description"),
-      type: formData.get("type"),
-      status: formData.get("status"),
-      price: formData.get("price"),
-      location: formData.get("location"),
-      image: formData.get("image"),
-    });
+    try {
+      const res = await fetch(`/api/properties/${params.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+      const json = await res.json();
 
-    setTimeout(() => {
+      if (!res.ok) {
+        if (json.errors) {
+          const fieldErrors: Record<string, string> = {};
+          Object.entries(json.errors).forEach(([key, value]) => {
+            fieldErrors[key] = Array.isArray(value) ? value[0] : String(value);
+          });
+          setErrors(fieldErrors);
+          toast.error("Please fix the errors in the form");
+        } else {
+          const message = json.message || "Failed to update property";
+          setErrors({ general: message });
+          toast.error(message);
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Property updated successfully");
+      router.push(`/dashboard/properties/${params.id}`);
+    } catch {
+      setErrors({ general: "Something went wrong. Please try again." });
+      toast.error("Something went wrong. Please try again.");
       setLoading(false);
-      router.push(`/dashboard/properties/${mockProperty.id}`);
-    }, 1000);
+    }
   };
+
+  if (!property)
+    return <div className="p-4 text-center">Loading property...</div>;
 
   return (
     <Card>
@@ -75,84 +130,152 @@ const PropertyEditSection = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left: form fields */}
-            <div className="md:col-span-1 space-y-4">
-              <Field>
-                <FieldLabel htmlFor="title">Title</FieldLabel>
-                <Input
-                  id="title"
-                  name="title"
-                  defaultValue={mockProperty.title}
-                  required
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="description">Description</FieldLabel>
-                <Input
-                  id="description"
-                  name="description"
-                  defaultValue={mockProperty.description}
-                />
-              </Field>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field>
-                  <FieldLabel htmlFor="type">Type</FieldLabel>
-                  <Select name="type" defaultValue={mockProperty.type}>
-                    <SelectTrigger id="type" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sale">Sale</SelectItem>
-                      <SelectItem value="rent">Rent</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <div className="md:col-span-1">
+              <FieldGroup>
+                <Field data-invalid={!!errors.title}>
+                  <FieldLabel htmlFor="title">Title</FieldLabel>
+                  <Input
+                    id="title"
+                    name="title"
+                    defaultValue={property.title}
+                    placeholder="Enter title"
+                    required
+                  />
+                  <FieldError>{errors.title}</FieldError>
                 </Field>
 
-                <Field>
-                  <FieldLabel htmlFor="status">Status</FieldLabel>
-                  <Select name="status" defaultValue={mockProperty.status}>
-                    <SelectTrigger id="status" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="available">Available</SelectItem>
-                      <SelectItem value="rented">Rented</SelectItem>
-                      <SelectItem value="sold">Sold</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <Field data-invalid={!!errors.description}>
+                  <FieldLabel htmlFor="description">Description</FieldLabel>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    defaultValue={property.description || ""}
+                    placeholder="Enter description"
+                  />
+                  <FieldError>{errors.description}</FieldError>
                 </Field>
-              </div>
 
-              <Field>
-                <FieldLabel htmlFor="price">Price (LKR)</FieldLabel>
-                <Input
-                  id="price"
-                  name="price"
-                  type="number"
-                  defaultValue={mockProperty.price}
-                  required
-                />
-              </Field>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field data-invalid={!!errors.type}>
+                    <FieldLabel htmlFor="type">Type</FieldLabel>
+                    <Select name="type" defaultValue={property.type}>
+                      <SelectTrigger id="type" className="w-full">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sale">Sale</SelectItem>
+                        <SelectItem value="rent">Rent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FieldError>{errors.type}</FieldError>
+                  </Field>
 
-              <Field>
-                <FieldLabel htmlFor="location">Location</FieldLabel>
-                <Input
-                  id="location"
-                  name="location"
-                  defaultValue={mockProperty.location}
-                  required
-                />
-              </Field>
+                  <Field data-invalid={!!errors.status}>
+                    <FieldLabel htmlFor="status">Status</FieldLabel>
+                    <Select name="status" defaultValue={property.status}>
+                      <SelectTrigger id="status" className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="rented">Rented</SelectItem>
+                        <SelectItem value="sold">Sold</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FieldError>{errors.status}</FieldError>
+                  </Field>
+                </div>
+
+                <Field data-invalid={!!errors.price}>
+                  <FieldLabel htmlFor="price">Price (LKR)</FieldLabel>
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    defaultValue={property.price}
+                    placeholder="Enter price"
+                    required
+                  />
+                  <FieldError>{errors.price}</FieldError>
+                </Field>
+
+                <Field data-invalid={!!errors.location}>
+                  <FieldLabel htmlFor="location">Location</FieldLabel>
+                  <Input
+                    id="location"
+                    name="location"
+                    defaultValue={property.location}
+                    placeholder="Enter location"
+                    required
+                  />
+                  <FieldError>{errors.location}</FieldError>
+                </Field>
+
+                {user?.role === "admin" && (
+                  <Field data-invalid={!!errors.agent_id}>
+                    <FieldLabel htmlFor="agent_id">Assign Agent</FieldLabel>
+                    <Select
+                      name="agent_id"
+                      defaultValue={property.agent?.id.toString()}
+                      onValueChange={(val) => {
+                        const input = document.getElementById(
+                          "agent_id_hidden",
+                        ) as HTMLInputElement;
+                        if (input) input.value = val;
+                      }}
+                    >
+                      <SelectTrigger id="agent_id" className="w-full">
+                        <SelectValue placeholder="Select an agent" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {agentsLoading ? (
+                          <SelectItem
+                            value="loading"
+                            disabled
+                            className="text-muted-foreground"
+                          >
+                            Loading agents...
+                          </SelectItem>
+                        ) : agents.length > 0 ? (
+                          agents.map((agent) => (
+                            <SelectItem
+                              key={agent.id}
+                              value={agent.id.toString()}
+                            >
+                              {agent.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="none" disabled>
+                            No agents available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <input
+                      type="hidden"
+                      name="agent_id"
+                      id="agent_id_hidden"
+                      defaultValue={property.agent?.id}
+                    />
+                    <FieldError>{errors.agent_id}</FieldError>
+                  </Field>
+                )}
+
+                {errors.general && (
+                  <p className="text-sm text-destructive">{errors.general}</p>
+                )}
+              </FieldGroup>
             </div>
 
             {/* Right: image, prefilled with existing */}
             <div className="md:col-span-1">
-              <Field>
+              <Field data-invalid={!!errors.image}>
                 <FieldLabel htmlFor="image">Property image</FieldLabel>
 
                 {imagePreview ? (
                   <div className="relative w-full h-64 md:h-full min-h-64 rounded-md border overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imagePreview}
                       alt="Preview"
@@ -186,18 +309,17 @@ const PropertyEditSection = () => {
                   onChange={handleImageChange}
                   className="hidden"
                 />
+                <FieldError>{errors.image}</FieldError>
               </Field>
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
           <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-            {loading ? "Saving..." : "Save changes"}
+            {loading ? "Updating..." : "Save changes"}
           </Button>
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={`/dashboard/properties/${mockProperty.id}`}>
-              Cancel
-            </Link>
+            <Link href={`/dashboard/properties/${property?.id}`}>Cancel</Link>
           </Button>
         </CardFooter>
       </form>

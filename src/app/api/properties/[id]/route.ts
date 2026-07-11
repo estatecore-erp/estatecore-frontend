@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { ApiResponse, Property, UpdatePropertyRequest } from "@/types";
+import { ApiResponse, Property } from "@/types";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -40,12 +40,12 @@ export async function PUT(
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
     }
 
-    const body: UpdatePropertyRequest = await req.json();
+    const formData = await req.formData();
 
     const data = await api<ApiResponse<Property>>(`/properties/${id}`, {
       method: "PUT",
       token,
-      body,
+      body: formData,
     });
 
     return NextResponse.json(data);

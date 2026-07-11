@@ -1,5 +1,5 @@
-import { Property } from './property';
-import { User } from './auth';
+import { Property } from "./property";
+import { User } from "./auth";
 
 export type LeaseStatus = "active" | "expired";
 

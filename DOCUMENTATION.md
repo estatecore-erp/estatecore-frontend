@@ -77,12 +77,12 @@ All real logic, state, and markup goes in `src/views/{module}/`.
 
 Every module gets 4 routes, no exceptions:
 
-| Route                              | File name                    | Component export         | Purpose            |
-|--------------------------------------|-------------------------------|-----------------------------|---------------------|
-| `/dashboard/{module}`                | `{Module}List.tsx`        | `{Module}ListSection`        | Table + filters + Add button |
-| `/dashboard/{module}/create`          | `{Module}Create.tsx`      | `{Module}CreateSection`      | Create form         |
-| `/dashboard/{module}/[id]`            | `{Module}Detail.tsx`      | `{Module}DetailSection`      | Read-only detail     |
-| `/dashboard/{module}/[id]/edit`       | `{Module}Edit.tsx`        | `{Module}EditSection`        | Edit form (separate route, not `?edit=`) |
+| Route                           | File name            | Component export        | Purpose                                  |
+| ------------------------------- | -------------------- | ----------------------- | ---------------------------------------- |
+| `/dashboard/{module}`           | `{Module}List.tsx`   | `{Module}ListSection`   | Table + filters + Add button             |
+| `/dashboard/{module}/create`    | `{Module}Create.tsx` | `{Module}CreateSection` | Create form                              |
+| `/dashboard/{module}/[id]`      | `{Module}Detail.tsx` | `{Module}DetailSection` | Read-only detail                         |
+| `/dashboard/{module}/[id]/edit` | `{Module}Edit.tsx`   | `{Module}EditSection`   | Edit form (separate route, not `?edit=`) |
 
 Reference: Properties module implements all 4 already — copy structure exactly.
 
@@ -116,10 +116,12 @@ Client components read auth state from `store/auth.ts`, never read cookies direc
 ## 5. Shared Utilities
 
 **`src/lib/formatters.ts`**
+
 - `formatCurrency(value)` → LKR format
 - `formatDate(value)` → consistent date display
 
 **`src/lib/constants.ts`**
+
 ```ts
 export const statusVariant: Record<string, string> = {
   available: "bg-green-100 text-green-800",
@@ -129,6 +131,7 @@ export const statusVariant: Record<string, string> = {
 
 export const PAGE_SIZE = 10;
 ```
+
 - `statusVariant` — Tailwind class map per status, used on Badge
 - `PAGE_SIZE` — shared pagination size for all list tables
 - Shared across all modules — do not redefine locally per module.
@@ -142,6 +145,7 @@ module must copy. Structure below — replicate exactly for Clients, Employees,
 Inquiries, Leases, Sales.
 
 ### 6.1 PropertiesList.tsx → `PropertiesListSection`
+
 - Table of properties (shadcn `Table`), paginated using `PAGE_SIZE`
 - Filters: type (sale/rent), status (available/sold/rented)
 - "Add Property" button — top right corner
@@ -149,15 +153,18 @@ Inquiries, Leases, Sales.
 - Status shown as Badge using `statusVariant`
 
 ### 6.2 PropertyCreate.tsx → `PropertyCreateSection`
+
 - Form built with shadcn `Field` components
 - `React.SyntheticEvent<HTMLFormElement>` for submit handler (not deprecated `FormEvent`)
 - On submit (currently mock) → redirect to detail page
 
 ### 6.3 PropertyDetail.tsx → `PropertyDetailSection`
+
 - Read-only display of a single property
 - Edit button → `/dashboard/properties/[id]/edit`
 
 ### 6.4 PropertyEdit.tsx → `PropertyEditSection`
+
 - Same form as Create, pre-filled with existing data
 - Separate route, not a query-param toggle on detail page
 
@@ -168,16 +175,16 @@ API connection happens after all module UIs are complete (project lead's task).
 
 ## 7. Module Build Status
 
-| Module     | Status              |
-|------------|----------------------|
-| Properties | ✅ Built (mock data)  |
+| Module                      | Status                           |
+| --------------------------- | -------------------------------- |
+| Properties                  | ✅ Built (mock data)             |
 | Users (Clients + Employees) | 🔲 To build (see §8 for pattern) |
-| Inquiries  | 🔲 To build (see §9)  |
-| Leases     | 🔲 To build (see §10) |
-| Sales      | 🔲 To build (see §11) |
-| Dashboard overview | 🔲 Pending         |
-| Portal pages        | 🔲 Pending         |
-| API integration      | 🔲 Pending (after all UIs done) |
+| Inquiries                   | 🔲 To build (see §9)             |
+| Leases                      | 🔲 To build (see §10)            |
+| Sales                       | 🔲 To build (see §11)            |
+| Dashboard overview          | 🔲 Pending                       |
+| Portal pages                | 🔲 Pending                       |
+| API integration             | 🔲 Pending (after all UIs done)  |
 
 ---
 

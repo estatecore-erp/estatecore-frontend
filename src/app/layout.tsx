@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { inter } from "@/utils/fonts";
 import AuthInitializer from "@/components/auth/AuthInitializer";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "EstateCore",
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className="min-h-screen">
         <TooltipProvider>
           <AuthInitializer />
+          <Toaster position="bottom-right" reverseOrder={false} />
           {children}
         </TooltipProvider>
       </body>
