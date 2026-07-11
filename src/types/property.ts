@@ -1,7 +1,7 @@
 export type PropertyType = "sale" | "rent";
 export type PropertyStatus = "available" | "sold" | "rented";
 
-export type Agent = {
+export type PropertyAgent = {
   id: number;
   name: string;
   email: string;
@@ -10,12 +10,13 @@ export type Agent = {
 export type Property = {
   id: number;
   title: string;
-  description?: string;
+  description?: string | null;
   type: PropertyType;
   status: PropertyStatus;
-  price: string;
+  price: number;
   location: string;
-  agent?: Agent;
+  image_path?: string | null;
+  agent?: PropertyAgent;
   created_at: string;
   updated_at: string;
 };
@@ -27,6 +28,7 @@ export type StorePropertyRequest = {
   price: number;
   location: string;
   agent_id?: number;
+  image?: File;
 };
 
 export type UpdatePropertyRequest = {
@@ -36,4 +38,5 @@ export type UpdatePropertyRequest = {
   status?: PropertyStatus;
   price?: number;
   location?: string;
+  image?: File;
 };
