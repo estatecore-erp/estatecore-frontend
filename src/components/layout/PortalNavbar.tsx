@@ -9,7 +9,8 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import LogoWide from "@/../public/logo-wide.svg";
 
 const navItems = [
-  { href: "/portal", label: "Properties" },
+  { href: "/portal", label: "Browse Properties" },
+  { href: "/portal/portfolio", label: "My Portfolio" },
   { href: "/portal/inquiries", label: "My Inquiries" },
 ];
 

@@ -1,12 +1,33 @@
-import { Property } from "./property";
-import { User } from "./auth";
+import { PropertyType, PropertyStatus } from "./property";
 
 export type LeaseStatus = "active" | "expired";
 
+export type LeaseAgent = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+export type LeaseProperty = {
+  id: number;
+  title: string;
+  type: PropertyType;
+  status: PropertyStatus;
+  price: number;
+  location: string;
+  agent: LeaseAgent | null;
+};
+
+export type LeaseClient = {
+  id: number;
+  name: string;
+  email: string;
+};
+
 export type Lease = {
   id: number;
-  property: Property;
-  client: User;
+  property: LeaseProperty;
+  client: LeaseClient;
   start_date: string;
   end_date: string;
   monthly_rent: number;
