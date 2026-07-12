@@ -1,9 +1,7 @@
-import React from 'react'
+import UserCreateSection from "@/views/UsersList.tsx/UserCreate";
 
 const UserCreatePage = () => {
-  return (
-    <div>UserCreatePage</div>
-  )
-}
+  return <UserCreateSection />;
+};
 
-export default UserCreatePage
+export default UserCreatePage;

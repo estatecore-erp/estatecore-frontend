@@ -1,9 +1,7 @@
-import React from 'react'
+import UserDetailsSection from "@/views/UsersList.tsx/UserDetail";
 
 const UserPage = () => {
-  return (
-    <div>UserPage</div>
-  )
-}
+  return <UserDetailsSection />;
+};
 
-export default UserPage
+export default UserPage;
