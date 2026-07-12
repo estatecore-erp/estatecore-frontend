@@ -1,6 +1,8 @@
 export type PropertyType = "sale" | "rent";
 export type PropertyStatus = "available" | "sold" | "rented";
 
+export type OwnershipType = "owned" | "rented";
+
 export type PropertyAgent = {
   id: number;
   name: string;
@@ -28,6 +30,7 @@ export type Property = {
   price: number;
   location: string;
   image_path?: string | null;
+  ownership_type?: OwnershipType;
   agent?: PropertyAgent;
   inquiries?: PropertyInquiry[];
   created_at: string;

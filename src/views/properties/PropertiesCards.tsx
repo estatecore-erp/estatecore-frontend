@@ -87,7 +87,7 @@ const PropertiesCardsSection = () => {
 
       {properties.length === 0 ? (
         <div className="text-center text-muted-foreground py-12">
-          No properties found
+          No properties available now
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

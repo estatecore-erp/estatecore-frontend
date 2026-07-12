@@ -1,7 +1,7 @@
-import React from "react";
+import PortfolioCardsSection from "@/views/portfolio/PortfolioCards";
 
 const PortfolioPage = () => {
-  return <div>PortfolioPage</div>;
+  return <PortfolioCardsSection />;
 };
 
 export default PortfolioPage;

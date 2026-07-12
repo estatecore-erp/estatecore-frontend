@@ -37,8 +37,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
     }
 
-    // forward as multipart/form-data (property image included) —
-    // don't use lib/api.ts here since it forces JSON content-type
     const formData = await req.formData();
 
     const res = await fetch(`${BASE_URL}/properties`, {
