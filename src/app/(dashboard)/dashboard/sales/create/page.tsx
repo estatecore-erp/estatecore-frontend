@@ -1,5 +1,7 @@
-const SalesCreatePage = () => {
-  return <div>SalesCreatePage</div>;
+import SaleCreateSection from "@/views/sales/SaleCreate";
+
+const SaleCreatePage = () => {
+  return <SaleCreateSection />;
 };
 
-export default SalesCreatePage;
+export default SaleCreatePage;

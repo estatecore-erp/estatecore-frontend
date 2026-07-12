@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Pencil, Plus } from "lucide-react";
+import { Eye, Pencil, Plus, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import PropertyDeleteDialog from "./PropertyDelete";
 import { formatCurrency } from "@/lib/formatters";
 import {
   Pagination,
@@ -29,191 +31,67 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useState } from "react";
-import { PAGE_SIZE, statusVariant } from "@/lib/constants";
-
-const mockProperties = [
-  {
-    id: 1,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 2,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 3,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 4,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 5,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 6,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 7,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 8,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 9,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 10,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 11,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 12,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 13,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 14,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 15,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 16,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 17,
-    title: "City Apartment",
-    type: "rent",
-    status: "rented",
-    price: "25000.00",
-    location: "Colombo 03",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 18,
-    title: "Luxury Villa",
-    type: "sale",
-    status: "sold",
-    price: "490000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-  {
-    id: 19,
-    title: "Modern Villa",
-    type: "sale",
-    status: "available",
-    price: "250000.00",
-    location: "Colombo 07",
-    agent: { name: "Jane Agent" },
-  },
-];
+import { useState, useEffect } from "react";
+import { useAuthStore } from "@/store/auth";
+import { statusVariant } from "@/lib/constants";
+import { Property, ApiResponse } from "@/types";
 
 const PropertiesListSection = () => {
+  const { isAdmin } = useAuthStore();
   const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [type, setType] = useState("all");
+  const [status, setStatus] = useState("all");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [propertyToDelete, setPropertyToDelete] = useState<number | null>(null);
 
-  const totalPages = Math.ceil(mockProperties.length / PAGE_SIZE);
-  const paginatedProperties = mockProperties.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE,
-  );
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        const query = new URLSearchParams({
+          page: page.toString(),
+          search: debouncedSearch,
+          type,
+          status,
+        });
+        const res = await fetch(`/api/properties?${query.toString()}`);
+        const json: ApiResponse<{ data: Property[]; last_page: number }> =
+          await res.json();
+        if (json.success && json.data) {
+          const propertiesData = json.data.data || json.data;
+          const lastPage = json.data.last_page || 1;
+
+          setProperties(propertiesData || []);
+          setTotalPages(lastPage);
+        } else {
+          toast.error("Failed to load properties");
+        }
+      } catch (error) {
+        console.error("Failed to fetch properties", error);
+        toast.error("Failed to load properties");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProperties();
+  }, [page, debouncedSearch, type, status]);
+
+  const paginatedProperties = properties;
+
+  if (loading)
+    return <div className="p-4 text-center">Loading properties...</div>;
 
   return (
     <div className="space-y-4">
@@ -231,9 +109,17 @@ const PropertiesListSection = () => {
         <Input
           placeholder="Search by title or location"
           className="flex-1 max-w-md"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex gap-2">
-          <Select>
+          <Select
+            value={type}
+            onValueChange={(val) => {
+              setType(val);
+              setPage(1);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-35">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
@@ -243,7 +129,13 @@ const PropertiesListSection = () => {
               <SelectItem value="rent">Rent</SelectItem>
             </SelectContent>
           </Select>
-          <Select>
+          <Select
+            value={status}
+            onValueChange={(val) => {
+              setStatus(val);
+              setPage(1);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-35">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
@@ -271,42 +163,66 @@ const PropertiesListSection = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedProperties.map((property) => (
-              <TableRow key={property.id}>
-                <TableCell className="font-medium whitespace-nowrap">
-                  {property.title}
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {property.location}
-                </TableCell>
-                <TableCell className="capitalize">{property.type}</TableCell>
-                <TableCell>
-                  <Badge
-                    className={`${statusVariant[property.status]} w-24 justify-center capitalize`}
-                  >
-                    {property.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {formatCurrency(property.price)}
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {property.agent.name}
-                </TableCell>
-                <TableCell className="text-right space-x-2 whitespace-nowrap">
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/dashboard/properties/${property.id}`}>
-                      <Eye className="w-4 h-4" />
-                    </Link>
-                  </Button>
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link href={`/dashboard/properties/${property.id}/edit`}>
-                      <Pencil className="w-4 h-4" />
-                    </Link>
-                  </Button>
+            {paginatedProperties.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground py-6"
+                >
+                  No properties found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              paginatedProperties.map((property) => (
+                <TableRow key={property.id}>
+                  <TableCell className="font-medium whitespace-nowrap">
+                    {property.title}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {property.location}
+                  </TableCell>
+                  <TableCell className="capitalize">{property.type}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={`${statusVariant[property.status]} w-24 justify-center capitalize`}
+                    >
+                      {property.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {formatCurrency(property.price)}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {property.agent?.name || "N/A"}
+                  </TableCell>
+                  <TableCell className="text-right space-x-2 whitespace-nowrap">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/dashboard/properties/${property.id}`}>
+                        <Eye className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/dashboard/properties/${property.id}/edit`}>
+                        <Pencil className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                    {isAdmin() && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setPropertyToDelete(property.id);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -357,6 +273,13 @@ const PropertiesListSection = () => {
           </PaginationContent>
         </Pagination>
       )}
+
+      <PropertyDeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        propertyId={propertyToDelete}
+        onSuccess={() => window.location.reload()}
+      />
     </div>
   );
 };

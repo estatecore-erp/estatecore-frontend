@@ -1,5 +1,7 @@
+import SalesListSection from "@/views/sales/SalesList";
+
 const SalesListPage = () => {
-  return <div>SalesListPage</div>;
+  return <SalesListSection />;
 };
 
 export default SalesListPage;

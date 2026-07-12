@@ -39,7 +39,7 @@ export default function DashboardBreadcrumb() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {crumbs.map((crumb, index) => (
+        {crumbs.map((crumb) => (
           <div key={crumb.href} className="flex items-center gap-1.5">
             <BreadcrumbItem>
               {crumb.isLast ? (

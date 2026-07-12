@@ -1,5 +1,7 @@
-const LeaseCreatePage = () => {
-  return <div>LeaseCreatePage</div>;
+import LeasesCreateSection from "@/views/leases/LeasesCreate";
+
+const LeasesPage = () => {
+  return <LeasesCreateSection />;
 };
 
-export default LeaseCreatePage;
+export default LeasesPage;

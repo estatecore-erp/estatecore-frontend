@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -21,11 +20,10 @@ import {
   FileText,
   DollarSign,
 } from "lucide-react";
-import LogoutButton from "@/components/auth/LogoutButton";
-
 import LogoMain from "@/../public/logo.svg";
 import LogoWide from "@/../public/logo-wide.svg";
 import { cn } from "@/lib/utils";
+import SidebarUserCard from "../user/SidebarUserCard";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -38,7 +36,12 @@ const navItems = [
 
 const AppSidebar = () => {
   const pathname = usePathname();
-  const { open } = useSidebar();
+  const { open, isMobile, setOpenMobile } = useSidebar();
+
+  const closeIfMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b p-2">
@@ -55,13 +58,11 @@ const AppSidebar = () => {
           )}
         </div>
       </SidebarHeader>
-
       <SidebarContent className="p-2">
         <SidebarMenu>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-
             return (
               <SidebarMenuItem key={item.href}>
                 <SidebarMenuButton
@@ -69,7 +70,7 @@ const AppSidebar = () => {
                   isActive={isActive}
                   tooltip={item.label}
                 >
-                  <Link href={item.href}>
+                  <Link href={item.href} onClick={closeIfMobile}>
                     <Icon className="w-4 h-4" />
                     <span>{item.label}</span>
                   </Link>
@@ -79,9 +80,8 @@ const AppSidebar = () => {
           })}
         </SidebarMenu>
       </SidebarContent>
-
       <SidebarFooter className="border-t p-4">
-        <LogoutButton />
+        <SidebarUserCard onNavigate={closeIfMobile} />
       </SidebarFooter>
     </Sidebar>
   );
