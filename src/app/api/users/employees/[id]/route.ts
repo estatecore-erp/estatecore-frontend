@@ -1,0 +1,79 @@
+import { api } from "@/lib/api";
+import { ApiResponse } from "@/types";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    }
+
+    const data = await api<ApiResponse<unknown>>(`/employees/${id}`, {
+      method: "GET",
+      token,
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(error, { status: 400 });
+  }
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    }
+
+    const body = await req.json();
+
+    const data = await api<ApiResponse<unknown>>(`/employees/${id}`, {
+      method: "PUT",
+      token,
+      body,
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(error, { status: 400 });
+  }
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
+    }
+
+    const data = await api<ApiResponse<unknown>>(`/employees/${id}`, {
+      method: "DELETE",
+      token,
+    });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(error, { status: 400 });
+  }
+}

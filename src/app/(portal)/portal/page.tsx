@@ -1,5 +1,7 @@
+import PropertiesCardsSection from "@/views/properties/PropertiesCards";
+
 const PortalPage = () => {
-  return <div>PortalPage</div>;
+  return <PropertiesCardsSection />;
 };
 
 export default PortalPage;
