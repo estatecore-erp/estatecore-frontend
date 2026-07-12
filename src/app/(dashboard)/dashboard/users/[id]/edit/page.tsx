@@ -1,4 +1,4 @@
-import UserEditSection from "@/views/UsersList.tsx/UserEdit";
+import UserEditSection from "@/views/users/UserEdit";
 
 const UserEditPage = () => {
   return <UserEditSection />;

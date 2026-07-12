@@ -1,4 +1,4 @@
-import UserCreateSection from "@/views/UsersList.tsx/UserCreate";
+import UserCreateSection from "@/views/users/UserCreate";
 
 const UserCreatePage = () => {
   return <UserCreateSection />;

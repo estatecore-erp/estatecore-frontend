@@ -1,4 +1,4 @@
-import UserDetailsSection from "@/views/UsersList.tsx/UserDetail";
+import UserDetailsSection from "@/views/users/UserDetail";
 
 const UserPage = () => {
   return <UserDetailsSection />;
