@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Card, CardContent } from "../ui/card";
+import Logo from "@/../public/logo-wide.svg";
+import Image from "next/image";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -55,7 +57,11 @@ export default function LoginForm() {
 
   return (
     <Card>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
+        <Image src={Logo} alt="logo-wide" className="h-10" />
+
+        <div className="border-t" />
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field data-invalid={!!errors.email}>
             <FieldLabel htmlFor="email">Email</FieldLabel>
