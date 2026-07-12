@@ -3,7 +3,7 @@ import { ApiResponse, Inquiry, StoreInquiryRequest } from "@/types";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
@@ -12,10 +12,13 @@ export async function GET() {
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
     }
 
-    const data = await api<ApiResponse<Inquiry[]>>("/inquiries", {
-      method: "GET",
-      token,
-    });
+    const { searchParams } = new URL(req.url);
+    const query = searchParams.toString();
+
+    const data = await api<ApiResponse<Inquiry[]>>(
+      `/inquiries${query ? `?${query}` : ""}`,
+      { method: "GET", token },
+    );
 
     return NextResponse.json(data);
   } catch (error) {

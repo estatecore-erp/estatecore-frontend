@@ -71,6 +71,7 @@ const PortalPropertyDetailSection = () => {
         toast.error(json.message || "Failed to send inquiry");
       }
     } catch (error) {
+      console.error("Failed to send inquiry", error);
       toast.error("An error occurred while sending the inquiry");
     } finally {
       setIsSubmitting(false);
@@ -95,6 +96,7 @@ const PortalPropertyDetailSection = () => {
           <div className="md:col-span-1">
             {property.image_path ? (
               <div className="w-full h-full min-h-40 md:min-h-64 rounded-lg overflow-hidden border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`${process.env.NEXT_PUBLIC_ASSET_URL}${property.image_path}`}
                   alt={property.title}

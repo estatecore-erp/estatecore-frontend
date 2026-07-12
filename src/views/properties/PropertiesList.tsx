@@ -67,7 +67,8 @@ const PropertiesListSection = () => {
           status,
         });
         const res = await fetch(`/api/properties?${query.toString()}`);
-        const json: ApiResponse<{ data: Property[], last_page: number }> = await res.json();
+        const json: ApiResponse<{ data: Property[]; last_page: number }> =
+          await res.json();
         if (json.success && json.data) {
           const propertiesData = json.data.data || json.data;
           const lastPage = json.data.last_page || 1;

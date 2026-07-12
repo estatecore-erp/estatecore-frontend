@@ -1,9 +1,10 @@
 "use client";
 
-import { Eye, Phone } from "lucide-react";
+import { Eye, Phone, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import toast from "react-hot-toast";
 import {
   Select,
   SelectContent,
@@ -34,75 +35,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useState } from "react";
-import { PAGE_SIZE, statusVariant } from "@/lib/constants";
-
-type InquiryStatus = "pending" | "responded";
-
-interface Inquiry {
-  id: number;
-  clientName: string;
-  clientEmail: string;
-  clientPhone: string;
-  property: string;
-  propertyLocation: string;
-  message: string;
-  status: InquiryStatus;
-}
-
-const mockInquiries: Inquiry[] = [
-  {
-    id: 1,
-    clientName: "John Client",
-    clientEmail: "john@gmail.com",
-    clientPhone: "0771234567",
-    property: "Modern Villa",
-    propertyLocation: "Modern Villa — Colombo 07",
-    message:
-      "I am interested in this property, can we schedule a viewing this weekend?",
-    status: "pending",
-  },
-  {
-    id: 2,
-    clientName: "Sam Client",
-    clientEmail: "sam@gmail.com",
-    clientPhone: "0779876543",
-    property: "Modern Villa",
-    propertyLocation: "Modern Villa — Colombo 07",
-    message: "Can I view it Sat morning around 10am?",
-    status: "pending",
-  },
-  {
-    id: 3,
-    clientName: "Ama Perera",
-    clientEmail: "ama.perera@gmail.com",
-    clientPhone: "0711122334",
-    property: "City Apartment",
-    propertyLocation: "City Apartment — Colombo 03",
-    message: "Is parking included with this unit?",
-    status: "responded",
-  },
-  {
-    id: 4,
-    clientName: "John Client",
-    clientEmail: "john@gmail.com",
-    clientPhone: "0771234567",
-    property: "Luxury Villa",
-    propertyLocation: "Luxury Villa — Colombo 07",
-    message: "What's the final price after negotiation?",
-    status: "pending",
-  },
-  {
-    id: 5,
-    clientName: "Sam Client",
-    clientEmail: "sam@gmail.com",
-    clientPhone: "0779876543",
-    property: "City Apartment",
-    propertyLocation: "City Apartment — Colombo 03",
-    message: "Is this still available for rent?",
-    status: "responded",
-  },
-];
+import { useState, useEffect, useCallback } from "react";
+import { useAuthStore } from "@/store/auth";
+import { statusVariant } from "@/lib/constants";
+import { Inquiry, ApiResponse } from "@/types";
+import InquiryDeleteDialog from "./InquiryDeleteDialog";
 
 function truncate(text: string, max = 30) {
   return text.length > max ? `${text.slice(0, max).trimEnd()}...` : text;
@@ -118,26 +55,101 @@ function initials(name: string) {
 }
 
 const InquiriesListSection = () => {
+  const { isAdmin } = useAuthStore();
+
   const [page, setPage] = useState(1);
-  const [inquiries, setInquiries] = useState<Inquiry[]>(mockInquiries);
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [status, setStatus] = useState("all");
+
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [selected, setSelected] = useState<Inquiry | null>(null);
+  const [updating, setUpdating] = useState(false);
 
-  const totalPages = Math.ceil(inquiries.length / PAGE_SIZE);
-  const paginatedInquiries = inquiries.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE,
-  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [inquiryToDelete, setInquiryToDelete] = useState<number | null>(null);
 
-  const markResponded = (id: number) => {
-    setInquiries((prev) =>
-      prev.map((inq) =>
-        inq.id === id ? { ...inq, status: "responded" as const } : inq,
-      ),
-    );
-    setSelected((prev) =>
-      prev && prev.id === id ? { ...prev, status: "responded" } : prev,
-    );
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const fetchInquiries = useCallback(async () => {
+    try {
+      const query = new URLSearchParams({
+        page: page.toString(),
+        search: debouncedSearch,
+        status,
+      });
+      const res = await fetch(`/api/inquiries?${query.toString()}`);
+      const json: ApiResponse<{ data: Inquiry[]; last_page: number }> =
+        await res.json();
+
+      if (json.success && json.data) {
+        const inquiriesData = json.data.data || json.data;
+        const lastPage = json.data.last_page || 1;
+
+        setInquiries((inquiriesData as Inquiry[]) || []);
+        setTotalPages(lastPage);
+      } else {
+        toast.error("Failed to load inquiries");
+      }
+    } catch (error) {
+      console.error("Failed to fetch inquiries", error);
+      toast.error("Failed to load inquiries");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, debouncedSearch, status]);
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchInquiries();
+    };
+    load();
+  }, [fetchInquiries]);
+
+  const markResponded = async (id: number) => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/inquiries/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "responded" }),
+      });
+      const json: ApiResponse<Inquiry> = await res.json();
+
+      if (!res.ok || json.success === false) {
+        toast.error(json.message || "Failed to update inquiry");
+        return;
+      }
+
+      toast.success("Inquiry marked as responded");
+
+      setInquiries((prev) =>
+        prev.map((inq) =>
+          inq.id === id ? { ...inq, status: "responded" as const } : inq,
+        ),
+      );
+      setSelected((prev) =>
+        prev && prev.id === id ? { ...prev, status: "responded" } : prev,
+      );
+    } catch (error) {
+      console.error("Failed to update inquiry", error);
+      toast.error("Failed to update inquiry");
+    } finally {
+      setUpdating(false);
+    }
   };
+
+  if (loading)
+    return <div className="p-4 text-center">Loading inquiries...</div>;
 
   return (
     <div className="space-y-4">
@@ -149,9 +161,17 @@ const InquiriesListSection = () => {
         <Input
           placeholder="Search by client or property"
           className="flex-1 max-w-md"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
         />
         <div className="flex gap-2">
-          <Select>
+          <Select
+            value={status}
+            onValueChange={(val) => {
+              setStatus(val);
+              setPage(1);
+            }}
+          >
             <SelectTrigger className="w-full sm:w-35">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
@@ -176,35 +196,59 @@ const InquiriesListSection = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedInquiries.map((inquiry) => (
-              <TableRow key={inquiry.id}>
-                <TableCell className="font-medium whitespace-nowrap">
-                  {inquiry.clientName}
-                </TableCell>
-                <TableCell className="whitespace-nowrap">
-                  {inquiry.property}
-                </TableCell>
-                <TableCell className="max-w-xs truncate">
-                  {truncate(inquiry.message)}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    className={`${statusVariant[inquiry.status]} w-24 justify-center capitalize`}
-                  >
-                    {inquiry.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right space-x-2 whitespace-nowrap">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSelected(inquiry)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
+            {inquiries.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-muted-foreground py-6"
+                >
+                  No inquiries found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              inquiries.map((inquiry) => (
+                <TableRow key={inquiry.id}>
+                  <TableCell className="font-medium whitespace-nowrap">
+                    {inquiry.client.name}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {inquiry.property.title}
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {truncate(inquiry.message)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge
+                      className={`${statusVariant[inquiry.status]} w-24 justify-center capitalize`}
+                    >
+                      {inquiry.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right space-x-2 whitespace-nowrap">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelected(inquiry)}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    {isAdmin() && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setInquiryToDelete(inquiry.id);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -271,30 +315,34 @@ const InquiriesListSection = () => {
               <div className="flex items-center gap-3">
                 <Avatar className="h-11 w-11">
                   <AvatarFallback className="bg-green-100 font-semibold text-green-800">
-                    {initials(selected.clientName)}
+                    {initials(selected.client.name)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="font-semibold">{selected.clientName}</p>
+                  <p className="font-semibold">{selected.client.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {selected.clientEmail}
+                    {selected.client.email}
                   </p>
                 </div>
-                <Button variant="outline" size="icon" asChild>
-                  <a
-                    href={`tel:${selected.clientPhone}`}
-                    aria-label="Call client"
-                  >
-                    <Phone className="w-4 h-4" />
-                  </a>
-                </Button>
+                {selected.client.phone && (
+                  <Button variant="outline" size="icon" asChild>
+                    <a
+                      href={`tel:${selected.client.phone}`}
+                      aria-label="Call client"
+                    >
+                      <Phone className="w-4 h-4" />
+                    </a>
+                  </Button>
+                )}
               </div>
 
               <div className="h-px w-full bg-border" />
 
               <div>
                 <p className="mb-1 text-sm text-muted-foreground">Property</p>
-                <p className="font-medium">{selected.propertyLocation}</p>
+                <p className="font-medium">
+                  {selected.property.title} — {selected.property.location}
+                </p>
               </div>
 
               <div>
@@ -306,14 +354,26 @@ const InquiriesListSection = () => {
                 <Button variant="outline" onClick={() => setSelected(null)}>
                   Close
                 </Button>
-                <Button onClick={() => markResponded(selected.id)}>
-                  Mark responded
+                <Button
+                  onClick={() => markResponded(selected.id)}
+                  disabled={updating || selected.status === "responded"}
+                >
+                  {selected.status === "responded"
+                    ? "Responded"
+                    : "Mark responded"}
                 </Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      <InquiryDeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        inquiryId={inquiryToDelete}
+        onSuccess={fetchInquiries}
+      />
     </div>
   );
 };

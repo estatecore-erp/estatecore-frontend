@@ -1,5 +1,7 @@
+import PortalInquiriesListSection from "@/views/inquiries/PortalInquiriesList";
+
 const PortalInquiriesPage = () => {
-  return <div>PortalInquiriesPage</div>;
+  return <PortalInquiriesListSection />;
 };
 
 export default PortalInquiriesPage;

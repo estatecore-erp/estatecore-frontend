@@ -100,6 +100,7 @@ const PropertiesCardsSection = () => {
               {/* Image */}
               {property.image_path ? (
                 <div className="w-full h-48 overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={`${process.env.NEXT_PUBLIC_ASSET_URL}${property.image_path}`}
                     alt={property.title}
