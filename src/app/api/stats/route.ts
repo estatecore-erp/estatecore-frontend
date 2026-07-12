@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { ApiResponse, Property } from "@/types";
+import { ApiResponse, DashboardStats } from "@/types";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ message: "Unauthenticated" }, { status: 401 });
     }
 
-    const data = await api<ApiResponse<Property[]>>(`/properties/portfolio`, {
+    const data = await api<ApiResponse<DashboardStats>>("/dashboard/stats", {
       method: "GET",
       token,
     });
