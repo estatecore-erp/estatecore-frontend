@@ -1,10 +1,31 @@
-import { Property } from "./property";
-import { User } from "./auth";
+import { PropertyType, PropertyStatus } from "./property";
+
+export type SaleAgent = {
+  id: number;
+  name: string;
+  email: string;
+};
+
+export type SaleProperty = {
+  id: number;
+  title: string;
+  type: PropertyType;
+  status: PropertyStatus;
+  price: number;
+  location: string;
+  agent: SaleAgent | null;
+};
+
+export type SaleClient = {
+  id: number;
+  name: string;
+  email: string;
+};
 
 export type Sale = {
   id: number;
-  property: Property;
-  client: User;
+  property: SaleProperty;
+  client: SaleClient;
   sale_price: number;
   sale_date: string;
   created_at: string;
