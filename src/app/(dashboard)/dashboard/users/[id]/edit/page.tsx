@@ -1,7 +1,7 @@
-import React from "react";
+import UserEditSection from "@/views/users/UserEdit";
 
 const UserEditPage = () => {
-  return <div>UserEditPage</div>;
+  return <UserEditSection />;
 };
 
 export default UserEditPage;

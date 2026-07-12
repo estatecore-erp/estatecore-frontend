@@ -1,7 +1,7 @@
-import React from "react";
+import UserCreateSection from "@/views/users/UserCreate";
 
 const UserCreatePage = () => {
-  return <div>UserCreatePage</div>;
+  return <UserCreateSection />;
 };
 
 export default UserCreatePage;

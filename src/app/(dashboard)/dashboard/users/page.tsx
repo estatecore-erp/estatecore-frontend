@@ -1,7 +1,7 @@
-import React from "react";
+import UsersSection from "@/views/users/UsersList";
 
 const UsersPage = () => {
-  return <div>UsersPage</div>;
+  return <UsersSection />;
 };
 
 export default UsersPage;

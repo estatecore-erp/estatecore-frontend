@@ -1,7 +1,7 @@
-import React from "react";
+import UserDetailsSection from "@/views/users/UserDetail";
 
 const UserPage = () => {
-  return <div>UserPage</div>;
+  return <UserDetailsSection />;
 };
 
 export default UserPage;
