@@ -28,7 +28,7 @@ import { ApiResponse, Property, PropertyAgent } from "@/types";
 const PropertyEditSection = () => {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuthStore();
+  const { isAdmin } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [agentsLoading, setAgentsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -53,7 +53,7 @@ const PropertyEditSection = () => {
           toast.error("Failed to load property");
         }
 
-        if (user?.role === "admin") {
+        if (isAdmin()) {
           setAgentsLoading(true);
           const agentRes = await fetch("/api/users?role=agent");
           const agentJson: ApiResponse<PropertyAgent[]> = await agentRes.json();
@@ -67,7 +67,7 @@ const PropertyEditSection = () => {
       }
     };
     fetchData();
-  }, [params.id, user]);
+  }, [params.id, isAdmin]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -211,7 +211,7 @@ const PropertyEditSection = () => {
                   <FieldError>{errors.location}</FieldError>
                 </Field>
 
-                {user?.role === "admin" && (
+                {isAdmin() && (
                   <Field data-invalid={!!errors.agent_id}>
                     <FieldLabel htmlFor="agent_id">Assign Agent</FieldLabel>
                     <Select

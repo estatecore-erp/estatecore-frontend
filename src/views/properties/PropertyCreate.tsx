@@ -27,7 +27,7 @@ import { ApiResponse, PropertyAgent } from "@/types";
 
 const PropertyCreateSection = () => {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { isAdmin } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [agentsLoading, setAgentsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -35,7 +35,7 @@ const PropertyCreateSection = () => {
   const [agents, setAgents] = useState<PropertyAgent[]>([]);
 
   useEffect(() => {
-    if (user?.role === "admin") {
+    if (isAdmin()) {
       const fetchAgents = async () => {
         setAgentsLoading(true);
         try {
@@ -51,7 +51,7 @@ const PropertyCreateSection = () => {
       };
       fetchAgents();
     }
-  }, [user]);
+  }, [isAdmin]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -175,7 +175,7 @@ const PropertyCreateSection = () => {
                   <FieldError>{errors.location}</FieldError>
                 </Field>
 
-                {user?.role === "admin" && (
+                {isAdmin() && (
                   <Field data-invalid={!!errors.agent_id}>
                     <FieldLabel htmlFor="agent_id">Assign Agent</FieldLabel>
                     <Select name="agent_id">

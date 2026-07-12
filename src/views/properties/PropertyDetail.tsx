@@ -12,8 +12,10 @@ import { statusVariant } from "@/lib/constants";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Property, ApiResponse } from "@/types";
 import PropertyDeleteDialog from "./PropertyDelete";
+import { useAuthStore } from "@/store/auth";
 
 const PropertyDetailSection = () => {
+  const { isAdmin } = useAuthStore();
   const router = useRouter();
   const params = useParams();
   const [property, setProperty] = useState<Property | null>(null);
@@ -120,14 +122,16 @@ const PropertyDetailSection = () => {
             Edit
           </Link>
         </Button>
-        <Button
-          variant="destructive"
-          onClick={() => setIsDeleteDialogOpen(true)}
-          className="w-full sm:w-auto"
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Delete
-        </Button>
+        {isAdmin() && (
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="w-full sm:w-auto"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </Button>
+        )}
         <Button variant="outline" asChild className="w-full sm:w-auto">
           <Link href="/dashboard/properties">Back</Link>
         </Button>

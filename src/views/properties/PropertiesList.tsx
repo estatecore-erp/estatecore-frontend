@@ -32,10 +32,12 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { useState, useEffect } from "react";
+import { useAuthStore } from "@/store/auth";
 import { statusVariant } from "@/lib/constants";
 import { Property, ApiResponse } from "@/types";
 
 const PropertiesListSection = () => {
+  const { isAdmin } = useAuthStore();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -203,17 +205,19 @@ const PropertiesListSection = () => {
                         <Pencil className="w-4 h-4" />
                       </Link>
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        setPropertyToDelete(property.id);
-                        setIsDeleteDialogOpen(true);
-                      }}
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
+                    {isAdmin() && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setPropertyToDelete(property.id);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
