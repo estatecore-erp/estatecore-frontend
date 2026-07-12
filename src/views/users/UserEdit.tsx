@@ -1,131 +1,140 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import { Field, FieldLabel } from "@/components/ui/field";
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from "@/components/ui/field";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-
-const mockUser = {
-  id: 1,
-  name: "John Doe",
-  email: "john@example.com",
-  type: "client",
-  status: "active",
-};
+import { User, ApiResponse } from "@/types";
 
 const UserEditSection = () => {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`/api/users/${params.id}`);
+        const json: ApiResponse<User> = await res.json();
+        if (json.success) setUser(json.data);
+        else toast.error("Failed to load user");
+      } catch {
+        toast.error("Failed to load user");
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchUser();
+  }, [params.id]);
 
   const handleUpdate = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!user) return;
     setLoading(true);
+    setErrors({});
 
     const formData = new FormData(e.currentTarget);
 
-    // MOCK ONLY (NO BACKEND YET)
-    console.log({
-      name: formData.get("name"),
-      email: formData.get("email"),
-      type: formData.get("type"),
-      status: formData.get("status"),
-    });
+    try {
+      const res = await fetch(`/api/users/${user.id}`, {
+        method: "PUT",
+        body: formData,
+      });
+      const json = await res.json();
 
-    setTimeout(() => {
+      if (!res.ok) {
+        if (json.errors) {
+          const fieldErrors: Record<string, string> = {};
+          Object.entries(json.errors).forEach(([key, value]) => {
+            fieldErrors[key] = Array.isArray(value) ? value[0] : String(value);
+          });
+          setErrors(fieldErrors);
+          toast.error("Please fix the errors in the form");
+        } else {
+          toast.error(json.message || "Failed to update user");
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success("User updated successfully");
+      router.push("/dashboard/users");
+    } catch {
+      toast.error("Something went wrong. Please try again.");
       setLoading(false);
-      router.push(`/dashboard/users/${mockUser.id}`);
-    }, 1000);
+    }
   };
+
+  if (fetching) return <div className="p-4 text-center">Loading user...</div>;
+  if (!user) return <div className="p-4 text-center">User not found</div>;
 
   return (
     <Card className="max-w-3xl">
       <form onSubmit={handleUpdate} className="space-y-4">
         <CardContent className="space-y-6">
-          <h1 className="text-2xl font-semibold">Edit user</h1>
-
-          {/* NAME */}
-          <Field>
-            <FieldLabel htmlFor="name">Full Name</FieldLabel>
-            <Input
-              id="name"
-              name="name"
-              defaultValue={mockUser.name}
-              required
-            />
-          </Field>
-
-          {/* EMAIL */}
-          <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              defaultValue={mockUser.email}
-              required
-            />
-          </Field>
-
-          {/* TYPE + STATUS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-            {/* TYPE */}
-            <Field>
-              <FieldLabel htmlFor="type">User Type</FieldLabel>
-              <Select name="type" defaultValue={mockUser.type}>
-                <SelectTrigger id="type" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="employee">Employee</SelectItem>
-                </SelectContent>
-              </Select>
+          <h1 className="text-2xl font-semibold">Edit {user.role}</h1>
+          <FieldGroup>
+            <Field data-invalid={!!errors.name}>
+              <FieldLabel htmlFor="name">Full Name</FieldLabel>
+              <Input id="name" name="name" defaultValue={user.name} required />
+              <FieldError>{errors.name}</FieldError>
             </Field>
 
-            {/* STATUS */}
             <Field>
-              <FieldLabel htmlFor="status">Status</FieldLabel>
-              <Select name="status" defaultValue={mockUser.status}>
-                <SelectTrigger id="status" className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                defaultValue={user.email}
+                disabled
+              />
             </Field>
 
-          </div>
+            <Field data-invalid={!!errors.phone}>
+              <FieldLabel htmlFor="phone">Phone Number</FieldLabel>
+              <Input
+                id="phone"
+                name="phone"
+                defaultValue={user.phone ?? ""}
+                required
+              />
+              <FieldError>{errors.phone}</FieldError>
+            </Field>
+
+            {user.role === "client" && (
+              <Field data-invalid={!!errors.address}>
+                <FieldLabel htmlFor="address">Address</FieldLabel>
+                <Input
+                  id="address"
+                  name="address"
+                  defaultValue={user.address ?? ""}
+                  required
+                />
+                <FieldError>{errors.address}</FieldError>
+              </Field>
+            )}
+          </FieldGroup>
         </CardContent>
-
-        {/* FOOTER */}
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? "Saving..." : "Save changes"}
           </Button>
-
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={`/dashboard/users/${mockUser.id}`}>
-              Cancel
-            </Link>
+            <Link href="/dashboard/users">Cancel</Link>
           </Button>
         </CardFooter>
       </form>

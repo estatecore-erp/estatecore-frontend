@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ const UserCreateSection = () => {
 
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+
     setErrors({});
 
     const formData = new FormData(e.currentTarget);
@@ -32,22 +33,46 @@ const UserCreateSection = () => {
 
     if (password !== confirmPassword) {
       setErrors({ confirm_password: "Passwords do not match" });
-      setLoading(false);
+
       return;
     }
 
-    // MOCK ONLY (NO BACKEND YET)
-    console.log({
-      name: formData.get("name"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-      password,
-    });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register-agent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          password,
+          password_confirmation: confirmPassword,
+          phone: formData.get("phone"),
+        }),
+      });
+      const json = await res.json();
 
-    setTimeout(() => {
-      setLoading(false);
+      if (!res.ok || !json.success) {
+        if (json.errors) {
+          const fieldErrors: Record<string, string> = {};
+          Object.entries(json.errors).forEach(([key, value]) => {
+            fieldErrors[key] = Array.isArray(value) ? value[0] : String(value);
+          });
+          setErrors(fieldErrors);
+          toast.error("Please fix the errors in the form");
+        } else {
+          toast.error(json.message || "Failed to create agent");
+        }
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Agent created successfully");
       router.push("/dashboard/users");
-    }, 1000);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,7 +82,6 @@ const UserCreateSection = () => {
           <h1 className="text-2xl font-semibold">Add agent</h1>
 
           <FieldGroup>
-            {/* NAME */}
             <Field data-invalid={!!errors.name}>
               <FieldLabel htmlFor="name">Full Name</FieldLabel>
               <Input
@@ -69,7 +93,6 @@ const UserCreateSection = () => {
               <FieldError>{errors.name}</FieldError>
             </Field>
 
-            {/* EMAIL + PHONE — same row on desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={!!errors.email}>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
@@ -95,7 +118,6 @@ const UserCreateSection = () => {
               </Field>
             </div>
 
-            {/* PASSWORD + CONFIRM PASSWORD — same row on desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field data-invalid={!!errors.password}>
                 <FieldLabel htmlFor="password">Password</FieldLabel>
@@ -111,7 +133,9 @@ const UserCreateSection = () => {
               </Field>
 
               <Field data-invalid={!!errors.confirm_password}>
-                <FieldLabel htmlFor="confirm_password">Confirm Password</FieldLabel>
+                <FieldLabel htmlFor="confirm_password">
+                  Confirm Password
+                </FieldLabel>
                 <Input
                   id="confirm_password"
                   name="confirm_password"
@@ -127,12 +151,8 @@ const UserCreateSection = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col sm:flex-row gap-3 justify-end">
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading ? "Creating..." : "Create user"}
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+            {loading ? "Creating..." : "Create agent"}
           </Button>
 
           <Button variant="outline" asChild className="w-full sm:w-auto">

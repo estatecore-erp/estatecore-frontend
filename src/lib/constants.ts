@@ -6,6 +6,8 @@ export const statusVariant: Record<string, string> = {
   responded: "bg-green-100 text-green-800",
   active: "bg-green-100 text-green-800",
   expired: "bg-zinc-100 text-zinc-700",
+  client: "bg-blue-100 text-blue-800",
+  agent: "bg-purple-100 text-purple-800",
 };
 
 export const PAGE_SIZE = 10;
