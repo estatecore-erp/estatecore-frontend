@@ -7,6 +7,18 @@ export type PropertyAgent = {
   email: string;
 };
 
+export type PropertyInquiry = {
+  id: number;
+  message: string;
+  status: string;
+  client: {
+    id: number;
+    name: string;
+    email: string;
+  };
+  created_at: string;
+};
+
 export type Property = {
   id: number;
   title: string;
@@ -17,6 +29,7 @@ export type Property = {
   location: string;
   image_path?: string | null;
   agent?: PropertyAgent;
+  inquiries?: PropertyInquiry[];
   created_at: string;
   updated_at: string;
 };
