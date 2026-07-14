@@ -39,7 +39,7 @@ const PropertyCreateSection = () => {
       const fetchAgents = async () => {
         setAgentsLoading(true);
         try {
-          const res = await fetch("/api/users?role=agent");
+          const res = await fetch("/api/users?type=employee");
           const json: ApiResponse<PropertyAgent[]> = await res.json();
           if (json.success) setAgents(json.data);
         } catch (error) {

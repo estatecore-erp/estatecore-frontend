@@ -15,8 +15,8 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const role = req.nextUrl.searchParams.get("role");
-    const query = role ? `?role=${role}` : "";
+    const type = req.nextUrl.searchParams.get("type");
+    const query = type ? `?type=${type}` : "";
 
     const result = await api<ApiResponse<unknown>>(`/users${query}`, {
       method: "GET",
