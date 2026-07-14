@@ -55,7 +55,7 @@ const PropertyEditSection = () => {
 
         if (isAdmin()) {
           setAgentsLoading(true);
-          const agentRes = await fetch("/api/users?role=agent");
+          const agentRes = await fetch("/api/users?type=employee");
           const agentJson: ApiResponse<PropertyAgent[]> = await agentRes.json();
           if (agentJson.success) setAgents(agentJson.data);
         }
